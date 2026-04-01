@@ -56,6 +56,29 @@ export function TokenTable({ tokens, mode, onArchive, onRestore }: TokenTablePro
 
   const columns: Column[] = [
     {
+      key: 'action',
+      label: '',
+      align: 'left',
+      render: (t) =>
+        mode === 'watchlist' ? (
+          <button
+            onClick={() => onArchive?.(t.mint)}
+            className="p-1.5 rounded-md text-gray-500 hover:text-amber-400 hover:bg-gray-800 transition-colors"
+            title="Archive"
+          >
+            <Archive />
+          </button>
+        ) : (
+          <button
+            onClick={() => onRestore?.(t.mint)}
+            className="p-1.5 rounded-md text-gray-500 hover:text-emerald-400 hover:bg-gray-800 transition-colors"
+            title="Restore"
+          >
+            <RotateCcw />
+          </button>
+        ),
+    },
+    {
       key: 'name',
       label: 'Token',
       align: 'left',
@@ -97,13 +120,19 @@ export function TokenTable({ tokens, mode, onArchive, onRestore }: TokenTablePro
       key: 'usd_market_cap',
       label: 'MCap',
       align: 'right',
-      render: (t) => <span className="text-gray-200">{formatUsd(t.usd_market_cap)}</span>,
+      render: (t) => <span className="text-yellow-300 font-medium">{formatUsd(t.usd_market_cap)}</span>,
     },
     {
       key: 'ath_market_cap',
       label: 'ATH',
       align: 'right',
-      render: (t) => <span className="text-gray-400">{formatUsd(t.ath_market_cap)}</span>,
+      render: (t) => <span className="text-orange-400">{formatUsd(t.ath_market_cap)}</span>,
+    },
+    {
+      key: 'created_timestamp',
+      label: 'Created',
+      align: 'right',
+      render: (t) => <span className="text-gray-500 text-xs">{formatDate(t.created_timestamp)}</span>,
     },
     {
       key: 'price_change_5m',
@@ -152,35 +181,6 @@ export function TokenTable({ tokens, mode, onArchive, onRestore }: TokenTablePro
       label: 'Vol 24h',
       align: 'right',
       render: (t) => <span className="text-gray-400">{formatVolume(t.volume_24h)}</span>,
-    },
-    {
-      key: 'created_timestamp',
-      label: 'Created',
-      align: 'right',
-      render: (t) => <span className="text-gray-500 text-xs">{formatDate(t.created_timestamp)}</span>,
-    },
-    {
-      key: 'action',
-      label: '',
-      align: 'right',
-      render: (t) =>
-        mode === 'watchlist' ? (
-          <button
-            onClick={() => onArchive?.(t.mint)}
-            className="p-1.5 rounded-md text-gray-500 hover:text-amber-400 hover:bg-gray-800 transition-colors"
-            title="Archive"
-          >
-            <Archive />
-          </button>
-        ) : (
-          <button
-            onClick={() => onRestore?.(t.mint)}
-            className="p-1.5 rounded-md text-gray-500 hover:text-emerald-400 hover:bg-gray-800 transition-colors"
-            title="Restore"
-          >
-            <RotateCcw />
-          </button>
-        ),
     },
   ]
 

@@ -40,14 +40,22 @@ body {
   @apply bg-gray-900/50;
 }
 
-/* Sticky first column for mobile */
+/* Sticky first two columns for mobile (action + token) */
 .token-table th:first-child,
 .token-table td:first-child {
   @apply sticky left-0 z-10 bg-gray-950;
 }
-.token-table tr:hover td:first-child {
+.token-table th:nth-child(2),
+.token-table td:nth-child(2) {
+  @apply sticky left-[42px] z-10 bg-gray-950;
+}
+.token-table tr:hover td:first-child,
+.token-table tr:hover td:nth-child(2) {
   @apply bg-gray-900;
 }
 .token-table th:first-child {
+  @apply z-20 bg-gray-900;
+}
+.token-table th:nth-child(2) {
   @apply z-20 bg-gray-900;
 }
