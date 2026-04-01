@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/pump/:path*",
+      "destination": "https://frontend-api-v3.pump.fun/:path*"
+    }
+  ]
+}
