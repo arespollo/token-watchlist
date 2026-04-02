@@ -2,15 +2,13 @@ import type { Token } from '../types/token'
 
 const PAGE_SIZE = 1000
 
-function fiveMonthsAgoMs(): number {
-  const d = new Date()
-  d.setMonth(d.getMonth() - 5)
-  return d.getTime()
+function ninetyDaysAgoMs(): number {
+  return Date.now() - 90 * 24 * 60 * 60 * 1000
 }
 
 async function fetchPage(offset: number): Promise<Token[]> {
   const now = Date.now()
-  const after = fiveMonthsAgoMs()
+  const after = ninetyDaysAgoMs()
   const params = new URLSearchParams({
     marketCapMin: '100000',
     marketCapMax: '500000',
