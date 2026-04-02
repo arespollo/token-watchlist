@@ -42,7 +42,8 @@ export async function fetchTokens(
     offset += PAGE_SIZE
   }
 
-  return all
+  // Filter out tokens with mint ending in "bags"
+  return all.filter((t) => !t.mint.toLowerCase().endsWith('bags'))
 }
 
 export interface PatternConfig {
