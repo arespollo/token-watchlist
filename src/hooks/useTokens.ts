@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { Token } from '../types/token'
-import { fetchTokens } from '../lib/api'
+import { fetchTokens, type PatternConfig } from '../lib/api'
 
 const POLL_INTERVAL = 10 // seconds
 
-export function useTokens() {
+export function useTokens(pattern: PatternConfig) {
   const [tokens, setTokens] = useState<Token[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -12,11 +12,17 @@ export function useTokens() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const patternRef = useRef(pattern)
+  patternRef.current = pattern
 
   const load = useCallback(async () => {
     try {
       setError(null)
-      const data = await fetchTokens()
+      const p = patternRef.current
+      let data = await fetchTokens(p.mcapMin, p.mcapMax, p.daysBack)
+      if (p.filter) {
+        data = data.filter(p.filter)
+      }
       setTokens(data)
       setLastUpdate(new Date())
     } catch (e) {
@@ -27,7 +33,6 @@ export function useTokens() {
   }, [])
 
   const startPolling = useCallback(() => {
-    // Clear existing
     if (intervalRef.current) clearInterval(intervalRef.current)
     if (countdownRef.current) clearInterval(countdownRef.current)
 
@@ -43,12 +48,15 @@ export function useTokens() {
   }, [load])
 
   const refresh = useCallback(() => {
+    setLoading(true)
     load()
     startPolling()
   }, [load, startPolling])
 
-  // Initial load + polling
+  // Reload on pattern change
   useEffect(() => {
+    setLoading(true)
+    setTokens([])
     load()
     startPolling()
 
@@ -56,7 +64,7 @@ export function useTokens() {
       if (intervalRef.current) clearInterval(intervalRef.current)
       if (countdownRef.current) clearInterval(countdownRef.current)
     }
-  }, [load, startPolling])
+  }, [pattern.id, load, startPolling])
 
   // Pause when tab hidden
   useEffect(() => {

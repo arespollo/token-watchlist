@@ -33,3 +33,5 @@ export type SortField = keyof Pick<
 >
 
 export type SortDirection = 'asc' | 'desc'
+
+export type ActiveView = 'watchlist' | 'archive'

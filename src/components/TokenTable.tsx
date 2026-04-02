@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import type { Token, SortField, SortDirection } from '../types/token'
-import { formatUsd, formatVolume, formatPercent, formatDate, percentColor } from '../lib/utils'
+import { formatUsd, formatVolume, formatPercent, formatDate, percentColor, mcapColor, ageColor } from '../lib/utils'
 import { ChevronUp, ChevronDown, Archive, RotateCcw } from './Icons'
 
 interface TokenTableProps {
@@ -120,19 +120,19 @@ export function TokenTable({ tokens, mode, onArchive, onRestore }: TokenTablePro
       key: 'usd_market_cap',
       label: 'MCap',
       align: 'right',
-      render: (t) => <span className="text-yellow-300 font-medium">{formatUsd(t.usd_market_cap)}</span>,
+      render: (t) => <span className={mcapColor(t.usd_market_cap)}>{formatUsd(t.usd_market_cap)}</span>,
     },
     {
       key: 'ath_market_cap',
       label: 'ATH',
       align: 'right',
-      render: (t) => <span className="text-orange-400">{formatUsd(t.ath_market_cap)}</span>,
+      render: (t) => <span className={mcapColor(t.ath_market_cap)}>{formatUsd(t.ath_market_cap)}</span>,
     },
     {
       key: 'created_timestamp',
       label: 'Created',
       align: 'right',
-      render: (t) => <span className="text-gray-500 text-xs">{formatDate(t.created_timestamp)}</span>,
+      render: (t) => <span className={`text-xs ${ageColor(t.created_timestamp)}`}>{formatDate(t.created_timestamp)}</span>,
     },
     {
       key: 'price_change_5m',
