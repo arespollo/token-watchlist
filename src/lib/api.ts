@@ -43,9 +43,11 @@ export async function fetchTokens(
   }
 
   // Filter out unwanted tokens
-  return all.filter(
-    (t) => !t.mint.toLowerCase().endsWith('bags') && t.mayhem_state !== 'active'
-  )
+  return all.filter((t) => {
+    const mint = String(t.mint || '').toLowerCase().trim()
+    const mayhemState = String(t.mayhem_state || '').toLowerCase().trim()
+    return !mint.endsWith('bags') && mayhemState !== 'active'
+  })
 }
 
 export interface PatternConfig {
