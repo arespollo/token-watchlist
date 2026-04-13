@@ -46,7 +46,7 @@ export async function fetchTokens(
   return all.filter((t) => {
     const mint = String(t.mint || '').toLowerCase().trim()
     const mayhemState = String(t.mayhem_state || '').toLowerCase().trim()
-    return !mint.endsWith('bags') && mayhemState !== 'active'
+    return !mint.endsWith('bags') && !mayhemState
   })
 }
 
