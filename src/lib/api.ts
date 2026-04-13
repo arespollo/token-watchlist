@@ -42,8 +42,10 @@ export async function fetchTokens(
     offset += PAGE_SIZE
   }
 
-  // Filter out tokens with mint ending in "bags"
-  return all.filter((t) => !t.mint.toLowerCase().endsWith('bags'))
+  // Filter out unwanted tokens
+  return all.filter(
+    (t) => !t.mint.toLowerCase().endsWith('bags') && t.mayhem_state !== 'active'
+  )
 }
 
 export interface PatternConfig {

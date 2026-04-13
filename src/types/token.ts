@@ -14,6 +14,7 @@ export interface Token {
   volume_1h: number
   volume_6h: number
   volume_24h: number
+  mayhem_state?: string
 }
 
 export type SortField = keyof Pick<
