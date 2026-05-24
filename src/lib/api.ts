@@ -46,7 +46,8 @@ export async function fetchTokens(
   return all.filter((t) => {
     const mint = String(t.mint || '').toLowerCase().trim()
     const mayhemState = String(t.mayhem_state || '').toLowerCase().trim()
-    return !mint.endsWith('bags') && !mayhemState
+    const athMarketCap = Number(t.ath_market_cap)
+    return !mint.endsWith('bags') && !mayhemState && Number.isFinite(athMarketCap) && athMarketCap > 0
   })
 }
 
@@ -84,7 +85,7 @@ export const PATTERNS: PatternConfig[] = [
     id: 'p3',
     label: 'Pattern 3',
     mcapMin: 1_000_000,
-    mcapMax: 10_000_000,
+    mcapMax: 1_000_000_000,
     daysBack: 90,
   },
   {
