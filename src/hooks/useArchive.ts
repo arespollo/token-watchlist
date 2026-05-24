@@ -1,40 +1,89 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
+
+const STORAGE_KEY = 'token-watchlist:archived-mints'
+
+function readLocalArchive(): Set<string> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    const mints = raw ? (JSON.parse(raw) as string[]) : []
+    return new Set(mints.filter((mint) => typeof mint === 'string' && mint.trim()))
+  } catch {
+    return new Set()
+  }
+}
+
+function writeLocalArchive(mints: Set<string>) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...mints]))
+}
+
+async function syncArchive(method: 'POST' | 'DELETE', mint: string) {
+  const res = await fetch('/api/archive', {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mint }),
+  })
+  if (!res.ok) throw new Error(`Archive sync failed: ${res.status}`)
+}
 
 export function useArchive() {
   const [archivedMints, setArchivedMints] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
 
-  // Load archived mints from Supabase on mount
   useEffect(() => {
     async function load() {
-      const { data, error } = await supabase
-        .from('archived_tokens')
-        .select('mint')
-      if (!error && data) {
-        setArchivedMints(new Set(data.map((r) => r.mint)))
+      const localMints = readLocalArchive()
+      setArchivedMints(localMints)
+
+      try {
+        const res = await fetch('/api/archive')
+        if (!res.ok) throw new Error(`Archive load failed: ${res.status}`)
+        const data = (await res.json()) as { mints?: string[] }
+        const remoteMints = new Set((data.mints || []).filter((mint) => typeof mint === 'string' && mint.trim()))
+        setArchivedMints(remoteMints)
+        writeLocalArchive(remoteMints)
+      } catch (error) {
+        console.warn('Using local archive fallback:', error)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
+
     load()
   }, [])
 
   const archive = useCallback(async (mint: string) => {
-    // Instant UI update
-    setArchivedMints((prev) => new Set(prev).add(mint))
-    // Sync to Supabase
-    await supabase.from('archived_tokens').upsert({ mint })
+    const normalizedMint = mint.trim()
+    if (!normalizedMint) return
+
+    setArchivedMints((prev) => {
+      const next = new Set(prev).add(normalizedMint)
+      writeLocalArchive(next)
+      return next
+    })
+
+    try {
+      await syncArchive('POST', normalizedMint)
+    } catch (error) {
+      console.warn('Failed to sync archived token:', error)
+    }
   }, [])
 
   const restore = useCallback(async (mint: string) => {
-    // Instant UI update
+    const normalizedMint = mint.trim()
+    if (!normalizedMint) return
+
     setArchivedMints((prev) => {
       const next = new Set(prev)
-      next.delete(mint)
+      next.delete(normalizedMint)
+      writeLocalArchive(next)
       return next
     })
-    // Sync to Supabase
-    await supabase.from('archived_tokens').delete().eq('mint', mint)
+
+    try {
+      await syncArchive('DELETE', normalizedMint)
+    } catch (error) {
+      console.warn('Failed to sync restored token:', error)
+    }
   }, [])
 
   return { archivedMints, archive, restore, loading }
