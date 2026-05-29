@@ -67,7 +67,7 @@ export const PATTERNS: PatternConfig[] = [
     id: 'p1',
     label: 'Pattern 1',
     mcapMin: 100_000,
-    mcapMax: 600_000,
+    mcapMax: 1_000_000,
     daysBack: 90,
     filter: (t) => t.ath_market_cap >= 900_000,
     filterLabel: 'ATH ≥ 900K',
