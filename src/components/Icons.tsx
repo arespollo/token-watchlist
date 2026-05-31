@@ -99,3 +99,23 @@ export function RotateCcw({ size = 14, className = '' }: IconProps) {
     </svg>
   )
 }
+
+export function SearchCheck({ size = 14, className = '' }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path d="M21 21l-4.3-4.3" />
+      <path d="M8.5 11l1.7 1.7 3.3-3.4" />
+    </svg>
+  )
+}

@@ -5,6 +5,7 @@ import { Filters } from './components/Filters'
 import { type FilterState, EMPTY_FILTERS, parseHumanNumber } from './lib/filters'
 import { useTokens } from './hooks/useTokens'
 import { useArchive } from './hooks/useArchive'
+import { useResearched } from './hooks/useResearched'
 import { PATTERNS } from './lib/api'
 import { daysAgo } from './lib/utils'
 
@@ -16,6 +17,7 @@ function App() {
   const activePattern = PATTERNS.find((p) => p.id === activePatternId) || PATTERNS[0]
   const { tokens, loading, error, countdown, lastUpdate, refresh } = useTokens(activePattern)
   const { archivedMints, archive, restore, loading: archiveLoading } = useArchive()
+  const { researchedMints, toggleResearched, loading: researchedLoading } = useResearched()
 
   const hasActiveFilter = !!(filters.mcapMin || filters.mcapMax || filters.ageMin || filters.ageMax)
 
@@ -72,7 +74,7 @@ function App() {
       />
 
       <main className="max-w-[1600px] mx-auto">
-        {(loading || archiveLoading) && tokens.length === 0 ? (
+        {(loading || archiveLoading || researchedLoading) && tokens.length === 0 ? (
           <div className="flex items-center justify-center py-20">
             <div className="flex items-center gap-3 text-gray-400">
               <div className="w-5 h-5 border-2 border-gray-600 border-t-gray-300 rounded-full animate-spin" />
@@ -93,10 +95,22 @@ function App() {
         ) : (
           <>
             {activeView === 'watchlist' && (
-              <TokenTable tokens={watchlistTokens} mode="watchlist" onArchive={archive} />
+              <TokenTable
+                tokens={watchlistTokens}
+                mode="watchlist"
+                researchedMints={researchedMints}
+                onToggleResearched={toggleResearched}
+                onArchive={archive}
+              />
             )}
             {activeView === 'archive' && (
-              <TokenTable tokens={archivedTokens} mode="archive" onRestore={restore} />
+              <TokenTable
+                tokens={archivedTokens}
+                mode="archive"
+                researchedMints={researchedMints}
+                onToggleResearched={toggleResearched}
+                onRestore={restore}
+              />
             )}
           </>
         )}

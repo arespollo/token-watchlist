@@ -1,11 +1,13 @@
 import { useState, useCallback } from 'react'
 import type { Token, SortField, SortDirection } from '../types/token'
 import { formatUsd, formatVolume, formatPercent, formatDate, percentColor, mcapColor, ageColor } from '../lib/utils'
-import { ChevronUp, ChevronDown, Archive, RotateCcw } from './Icons'
+import { ChevronUp, ChevronDown, Archive, RotateCcw, SearchCheck } from './Icons'
 
 interface TokenTableProps {
   tokens: Token[]
   mode: 'watchlist' | 'archive'
+  researchedMints: Set<string>
+  onToggleResearched?: (mint: string) => void
   onArchive?: (mint: string) => void
   onRestore?: (mint: string) => void
 }
@@ -20,7 +22,7 @@ interface Column {
 const IMG_FALLBACK =
   'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect fill="%23374151" width="32" height="32" rx="16"/><text x="16" y="21" text-anchor="middle" fill="%239CA3AF" font-size="14">?</text></svg>'
 
-export function TokenTable({ tokens, mode, onArchive, onRestore }: TokenTableProps) {
+export function TokenTable({ tokens, mode, researchedMints, onToggleResearched, onArchive, onRestore }: TokenTableProps) {
   const [sortField, setSortField] = useState<SortField>('usd_market_cap')
   const [sortDir, setSortDir] = useState<SortDirection>('desc')
   const [copiedMint, setCopiedMint] = useState<string | null>(null)
@@ -59,24 +61,42 @@ export function TokenTable({ tokens, mode, onArchive, onRestore }: TokenTablePro
       key: 'action',
       label: '',
       align: 'left',
-      render: (t) =>
-        mode === 'watchlist' ? (
-          <button
-            onClick={() => onArchive?.(t.mint)}
-            className="p-1.5 rounded-md text-gray-500 hover:text-amber-400 hover:bg-gray-800 transition-colors"
-            title="Archive"
-          >
-            <Archive />
-          </button>
-        ) : (
-          <button
-            onClick={() => onRestore?.(t.mint)}
-            className="p-1.5 rounded-md text-gray-500 hover:text-emerald-400 hover:bg-gray-800 transition-colors"
-            title="Restore"
-          >
-            <RotateCcw />
-          </button>
-        ),
+      render: (t) => {
+        const isResearched = researchedMints.has(t.mint)
+
+        return (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => onToggleResearched?.(t.mint)}
+              className={`p-1.5 rounded-md transition-colors ${
+                isResearched
+                  ? 'text-indigo-300 bg-indigo-500/10 hover:text-indigo-200 hover:bg-indigo-500/20'
+                  : 'text-gray-500 hover:text-indigo-300 hover:bg-gray-800'
+              }`}
+              title={isResearched ? 'Unmark researched' : 'Mark researched'}
+            >
+              <SearchCheck />
+            </button>
+            {mode === 'watchlist' ? (
+              <button
+                onClick={() => onArchive?.(t.mint)}
+                className="p-1.5 rounded-md text-gray-500 hover:text-amber-400 hover:bg-gray-800 transition-colors"
+                title="Archive"
+              >
+                <Archive />
+              </button>
+            ) : (
+              <button
+                onClick={() => onRestore?.(t.mint)}
+                className="p-1.5 rounded-md text-gray-500 hover:text-emerald-400 hover:bg-gray-800 transition-colors"
+                title="Restore"
+              >
+                <RotateCcw />
+              </button>
+            )}
+          </div>
+        )
+      },
     },
     {
       key: 'name',
@@ -94,14 +114,21 @@ export function TokenTable({ tokens, mode, onArchive, onRestore }: TokenTablePro
             loading="lazy"
           />
           <div className="flex flex-col">
-            <a
-              href={`https://gmgn.ai/sol/token/${t.mint}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-100 hover:text-blue-400 font-medium transition-colors text-sm leading-tight"
-            >
-              {t.symbol}
-            </a>
+            <div className="flex items-center gap-1.5">
+              <a
+                href={`https://gmgn.ai/sol/token/${t.mint}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-100 hover:text-blue-400 font-medium transition-colors text-sm leading-tight"
+              >
+                {t.symbol}
+              </a>
+              {researchedMints.has(t.mint) && (
+                <span className="rounded-full border border-indigo-400/30 bg-indigo-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-indigo-300">
+                  Researched
+                </span>
+              )}
+            </div>
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -215,15 +242,19 @@ export function TokenTable({ tokens, mode, onArchive, onRestore }: TokenTablePro
           </tr>
         </thead>
         <tbody>
-          {sorted.map((token) => (
-            <tr key={token.mint}>
-              {columns.map((col) => (
-                <td key={col.key} className={col.align === 'right' ? 'text-right' : ''}>
-                  {col.render(token)}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {sorted.map((token) => {
+            const isResearched = researchedMints.has(token.mint)
+
+            return (
+              <tr key={token.mint} className={isResearched ? 'bg-indigo-950/20' : undefined}>
+                {columns.map((col) => (
+                  <td key={col.key} className={col.align === 'right' ? 'text-right' : ''}>
+                    {col.render(token)}
+                  </td>
+                ))}
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>
